@@ -1,27 +1,13 @@
-import { SYSTEM_PROMPT } from './systemPrompt'
-
-function normalizeOllamaUrl(ollamaUrl: string) {
-  return ollamaUrl.replace(/\/+$/, '')
-}
-
 /**
- * Returns the API base to use for browser fetch calls.
+ * Browser-side Ollama client.
  *
- * Remote URLs are routed through the Vite /ollama proxy so the browser
- * always calls the same origin and CORS never fires.
- *
- * Localhost URLs are called directly (Ollama allows them by default).
+ * All requests go to the Express backend at /api/* (same origin as the Vite
+ * dev server). Vite proxies /api → localhost:3001 in development. The backend
+ * then forwards to Ollama, so the browser never calls Ollama directly and CORS
+ * is never an issue regardless of where Ollama is running.
  */
-function resolveApiBase(ollamaUrl: string): string {
-  const normalized = normalizeOllamaUrl(ollamaUrl)
-  const isLocalhost =
-    normalized.includes('localhost') || normalized.includes('127.0.0.1') || normalized.includes('::1')
-  if (isLocalhost) return normalized
-  return '/ollama'
-}
 
 export type GenerateAnalysisArgs = {
-  ollamaUrl: string
   model: string
   transcriptText: string
   onToken?: (assembled: string) => void
@@ -33,62 +19,47 @@ export type ConnectionResult = {
 }
 
 /**
- * Sends a transcript to Ollama using streaming so the connection stays alive
- * through Cloudflare and other proxies that timeout on idle connections.
- *
- * Ollama sends newline-delimited JSON chunks:
- *   {"response":"partial token","done":false}
- *   ...
- *   {"response":"","done":true}
- *
- * We concatenate every `response` field and parse the full JSON at the end.
- * The optional `onToken` callback receives the assembled text so far so the
- * UI can show a live progress indicator.
+ * Sends a transcript to the backend /api/analyze endpoint.
+ * The response is a streaming newline-delimited JSON from Ollama (forwarded
+ * by Express). We accumulate the `response` field from each chunk and return
+ * the final assembled text parsed as JSON.
  */
 export async function generateAnalysis(args: GenerateAnalysisArgs): Promise<unknown> {
-  const baseUrl = resolveApiBase(args.ollamaUrl)
   const controller = new AbortController()
 
   let res: Response
   try {
-    res = await fetch(`${baseUrl}/api/generate`, {
+    res = await fetch('/api/analyze', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       signal: controller.signal,
-      body: JSON.stringify({
-        model: args.model,
-        system: SYSTEM_PROMPT,
-        prompt: args.transcriptText,
-        stream: true,
-        options: { temperature: 0 },
-        format: 'json',
-      }),
+      body: JSON.stringify({ model: args.model, transcript: args.transcriptText }),
     })
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') {
       throw new Error('Analysis cancelled.')
     }
-    throw new Error('Could not reach Ollama. Check the URL and make sure Ollama is running.')
+    throw new Error('Could not reach the backend server. Make sure it is running on port 3001.')
   }
 
   if (!res.ok) {
-    throw new Error(`Ollama request failed (${res.status})`)
+    let detail = ''
+    try { detail = (await res.json()).error ?? '' } catch { /* ignore */ }
+    if (res.status === 400) throw new Error(`Bad request: ${detail}`)
+    if (res.status === 404) throw new Error(`Model not found on Ollama: ${detail}`)
+    throw new Error(`Backend error (${res.status})${detail ? `: ${detail}` : ''}`)
   }
 
-  if (!res.body) {
-    throw new Error('Ollama returned no response body.')
-  }
+  if (!res.body) throw new Error('No response body from backend.')
 
   const reader = res.body.getReader()
   const decoder = new TextDecoder()
   let assembled = ''
   let leftover = ''
 
-  // Idle watchdog — reset on every incoming chunk. If 3 minutes pass with no
-  // data the model has likely crashed or the connection silently dropped.
+  // Idle watchdog — if no token arrives for 3 minutes, abort.
   let idleTimer = window.setTimeout(() => controller.abort(), 3 * 60 * 1000)
-
-  function resetIdle() {
+  const resetIdle = () => {
     window.clearTimeout(idleTimer)
     idleTimer = window.setTimeout(() => controller.abort(), 3 * 60 * 1000)
   }
@@ -100,7 +71,7 @@ export async function generateAnalysis(args: GenerateAnalysisArgs): Promise<unkn
       try {
         ;({ done, value } = await reader.read())
       } catch {
-        throw new Error('Connection lost while receiving response from Ollama.')
+        throw new Error('Connection lost while receiving response from backend.')
       }
 
       if (done) break
@@ -114,11 +85,7 @@ export async function generateAnalysis(args: GenerateAnalysisArgs): Promise<unkn
         const trimmed = line.trim()
         if (!trimmed) continue
         let parsed: any
-        try {
-          parsed = JSON.parse(trimmed)
-        } catch {
-          continue
-        }
+        try { parsed = JSON.parse(trimmed) } catch { continue }
         if (typeof parsed?.response === 'string') {
           assembled += parsed.response
           args.onToken?.(assembled)
@@ -131,29 +98,23 @@ export async function generateAnalysis(args: GenerateAnalysisArgs): Promise<unkn
     reader.releaseLock()
   }
 
-  if (!assembled) {
-    throw new Error('Ollama returned an empty response.')
-  }
+  if (!assembled) throw new Error('Backend returned an empty response.')
 
   console.log('[ollama] Raw assembled response (%d chars):', assembled.length, assembled)
 
-  // Direct parse first.
   try {
     return JSON.parse(assembled)
   } catch (directErr) {
     console.warn('[ollama] Direct JSON.parse failed:', directErr)
   }
 
-  // Fallback: extract the outermost {...} block in case the model wrapped the
-  // JSON in markdown fences (```json ... ```) or added commentary around it.
+  // Fallback: extract the outermost {...} block in case of surrounding text.
   const jsonStart = assembled.indexOf('{')
   const jsonEnd = assembled.lastIndexOf('}')
   if (jsonStart !== -1 && jsonEnd > jsonStart) {
     const extracted = assembled.slice(jsonStart, jsonEnd + 1)
     console.log('[ollama] Trying extracted JSON (%d chars):', extracted.length, extracted)
-    try {
-      return JSON.parse(extracted)
-    } catch (extractErr) {
+    try { return JSON.parse(extracted) } catch (extractErr) {
       console.warn('[ollama] Extracted JSON.parse also failed:', extractErr)
     }
   }
@@ -161,12 +122,15 @@ export async function generateAnalysis(args: GenerateAnalysisArgs): Promise<unkn
   throw new Error('Ollama returned malformed JSON. Try running again.')
 }
 
-export async function testConnection(ollamaUrl: string, model: string): Promise<ConnectionResult> {
-  const baseUrl = resolveApiBase(ollamaUrl)
+/**
+ * Pings /api/models (backend → Ollama /api/tags) and checks if the
+ * configured model is installed.
+ */
+export async function testConnection(_ollamaUrl: string, model: string): Promise<ConnectionResult> {
   const controller = new AbortController()
   const timeoutId = window.setTimeout(() => controller.abort(), 20_000)
   try {
-    const res = await fetch(`${baseUrl}/api/tags`, { method: 'GET', signal: controller.signal })
+    const res = await fetch('/api/models', { signal: controller.signal })
     if (!res.ok) return { ok: false, modelAvailable: false }
 
     const data: any = await res.json()
@@ -174,7 +138,8 @@ export async function testConnection(ollamaUrl: string, model: string): Promise<
     const modelAvailable = models.some((item: any) => {
       const name = typeof item?.name === 'string' ? item.name : ''
       const modelName = typeof item?.model === 'string' ? item.model : ''
-      return name === model || modelName === model || name.startsWith(`${model}:`) || modelName.startsWith(`${model}:`)
+      return name === model || modelName === model
+        || name.startsWith(`${model}:`) || modelName.startsWith(`${model}:`)
     })
 
     return { ok: true, modelAvailable }

@@ -97,7 +97,6 @@ export default function App() {
     setIsRunning(true)
     try {
       const raw = await generateAnalysis({
-        ollamaUrl,
         model,
         transcriptText: trimmed,
         onToken: (assembled) => setTokenCount(assembled.length),

@@ -4,7 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently -n backend,frontend -c cyan,magenta \"node server/index.mjs\" \"vite\"",
+    "server": "node server/index.mjs",
+    "frontend": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "vitest run",
