@@ -1,4 +1,4 @@
-# Trinethra — Supervisor Feedback Analyzer
+# Supervisor Feedback Analyzer
 
 A web app for DeepThought psychology interns. Paste a supervisor feedback transcript, send it to a locally or remotely running Ollama model, and get a structured draft analysis covering score, evidence, KPI mapping, gaps, and follow-up questions.
 
