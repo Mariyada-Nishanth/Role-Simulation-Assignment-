@@ -12,12 +12,29 @@
  */
 
 import express from 'express'
-import { readFileSync } from 'fs'
+import { readFileSync, existsSync } from 'fs'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
 import { createServer } from 'http'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
+
+// ─── Load .env.local ─────────────────────────────────────────────────────────
+// Node doesn't load .env files automatically. We parse .env.local manually
+// so the server picks up VITE_OLLAMA_URL without requiring dotenv as a dep.
+
+const envPath = join(__dirname, '..', '.env.local')
+if (existsSync(envPath)) {
+  for (const line of readFileSync(envPath, 'utf8').split('\n')) {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith('#')) continue
+    const eqIdx = trimmed.indexOf('=')
+    if (eqIdx === -1) continue
+    const key = trimmed.slice(0, eqIdx).trim()
+    const val = trimmed.slice(eqIdx + 1).trim()
+    if (!(key in process.env)) process.env[key] = val
+  }
+}
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 
@@ -137,7 +154,20 @@ app.get('/api/health', (_req, res) => {
 
 // ─── Start ────────────────────────────────────────────────────────────────────
 
-createServer(app).listen(PORT, () => {
+const server = createServer(app)
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`\n[backend] ERROR: Port ${PORT} is already in use.`)
+    console.error(`[backend] Kill the existing process and restart:\n`)
+    console.error(`  Windows:  netstat -ano | findstr :${PORT}  → Stop-Process -Id <PID> -Force`)
+    console.error(`  Mac/Linux: lsof -ti :${PORT} | xargs kill\n`)
+    process.exit(1)
+  }
+  throw err
+})
+
+server.listen(PORT, () => {
   console.log(`Trinethra backend running on http://localhost:${PORT}`)
   console.log(`Ollama target: ${OLLAMA_URL}`)
 })
