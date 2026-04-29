@@ -12,6 +12,7 @@
  */
 
 import express from 'express'
+import cors from 'cors'
 import { readFileSync, existsSync } from 'fs'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
@@ -58,6 +59,15 @@ const SYSTEM_PROMPT = loadSystemPrompt()
 // ─── App ─────────────────────────────────────────────────────────────────────
 
 const app = express()
+
+// Allow the Vite dev server (any localhost port) to call Express directly.
+// This lets the browser bypass the Vite proxy for streaming endpoints where
+// the proxy buffers the response instead of forwarding chunks immediately.
+app.use(cors({
+  origin: /^http:\/\/localhost(:\d+)?$/,
+  methods: ['GET', 'POST', 'OPTIONS'],
+}))
+
 app.use(express.json({ limit: '1mb' }))
 
 // Basic request logger
@@ -127,15 +137,22 @@ app.post('/api/analyze', async (req, res) => {
   // Stream the Ollama response directly to the browser.
   // Each chunk is a JSON line; the browser accumulates the `response` fields.
   res.setHeader('Content-Type', 'application/x-ndjson')
-  res.setHeader('Transfer-Encoding', 'chunked')
   res.setHeader('Cache-Control', 'no-cache')
+  res.setHeader('X-Accel-Buffering', 'no') // disable nginx/proxy buffering
+
+  // Disable TCP Nagle algorithm so each chunk is sent immediately without
+  // waiting to be batched into a larger TCP segment.
+  res.socket?.setNoDelay(true)
+  res.flushHeaders()
 
   const reader = ollamaRes.body.getReader()
   const pump = async () => {
     while (true) {
       const { done, value } = await reader.read()
       if (done) break
-      res.write(value)
+      const flushed = res.write(value)
+      // If the write buffer is full, wait for it to drain before continuing.
+      if (!flushed) await new Promise((resolve) => res.once('drain', resolve))
     }
     res.end()
   }

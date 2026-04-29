@@ -1,11 +1,16 @@
 /**
  * Browser-side Ollama client.
  *
- * All requests go to the Express backend at /api/* (same origin as the Vite
- * dev server). Vite proxies /api → localhost:3001 in development. The backend
- * then forwards to Ollama, so the browser never calls Ollama directly and CORS
- * is never an issue regardless of where Ollama is running.
+ * Calls the Express backend (port 3001) directly instead of going through
+ * the Vite dev proxy. The Vite proxy buffers streaming responses before
+ * forwarding them, which means the browser would see nothing until the entire
+ * LLM response is complete — defeating the purpose of streaming.
+ *
+ * Express has CORS enabled for localhost origins, so direct cross-origin calls
+ * from the Vite dev server (port 5173) are allowed.
  */
+
+const BACKEND = 'http://localhost:3001'
 
 export type GenerateAnalysisArgs = {
   model: string
@@ -29,7 +34,7 @@ export async function generateAnalysis(args: GenerateAnalysisArgs): Promise<unkn
 
   let res: Response
   try {
-    res = await fetch('/api/analyze', {
+    res = await fetch(`${BACKEND}/api/analyze`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       signal: controller.signal,
@@ -130,7 +135,7 @@ export async function testConnection(_ollamaUrl: string, model: string): Promise
   const controller = new AbortController()
   const timeoutId = window.setTimeout(() => controller.abort(), 20_000)
   try {
-    const res = await fetch('/api/models', { signal: controller.signal })
+    const res = await fetch(`${BACKEND}/api/models`, { signal: controller.signal })
     if (!res.ok) return { ok: false, modelAvailable: false }
 
     const data: any = await res.json()
