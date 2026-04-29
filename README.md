@@ -23,7 +23,7 @@ qwen2.5:7b (or any pulled model)
 
 The browser never talks to Ollama directly. All requests go through the Express backend, which forwards them to the configured Ollama server. This eliminates CORS entirely and gives the backend a clean place to add input validation, logging, or auth later.
 
-In development, Vite proxies `/api/*` to the Express server on port 3001, so the browser sees a single origin.
+The browser calls Express on port 3001 directly (not through the Vite proxy). The Vite proxy buffers streaming responses before forwarding them, which would mean the browser receives nothing until the entire LLM response is complete. Calling Express directly with CORS enabled avoids this — tokens arrive in the browser as they are generated.
 
 ---
 
@@ -189,7 +189,8 @@ The error banner in the UI also has a "Show raw model output" toggle so you can 
 
 ## What I Would Improve With More Time
 
-- Quote highlighting — click an evidence card to jump to that quote in the transcript
-- Edit/review workflow — accept, rewrite, or reject individual findings inline
-- Second-pass repair — if the model returns invalid JSON, send a focused follow-up prompt to fix the specific failing field
-- Sample transcript buttons for faster evaluator testing
+- **Session history** — Currently each analysis session is stateless — there is no history between calls. With more time I would add a session log that stores previous analyses per Fellow, so the intern can see how scores have changed over time and track which follow-up questions were already asked in previous calls.
+- **Quote highlighting** — click an evidence card to jump to that quote in the transcript
+- **Edit/review workflow** — accept, rewrite, or reject individual findings inline
+- **Second-pass repair** — if the model returns invalid JSON, send a focused follow-up prompt to fix the specific failing field
+- **Sample transcript buttons** for faster evaluator testing
