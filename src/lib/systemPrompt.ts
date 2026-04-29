@@ -60,16 +60,18 @@ Everything at 9, done flawlessly, with others learning from their work and clear
 
 Most important scoring boundary:
 - Score 6 = takes initiative WITHIN tasks assigned by someone else. The supervisor defines the scope; the Fellow executes it well.
-- Score 7 = EXPANDS scope by identifying a problem, pattern, or gap the supervisor had NOT asked them to find and had NOT noticed themselves.
+- Score 7 = EXPANDS scope by identifying a meaningful problem, pattern, or gap the supervisor had not already defined and the Fellow was not simply assigned to execute.
 
-AUTOMATIC Score 7 triggers — if ANY of these appear in the transcript, the score MUST be 7 or higher:
-- "I didn't know", "we didn't have", "I hadn't noticed", "I wasn't aware", "I didn't even know" — supervisor admits they lacked this insight BEFORE the Fellow surfaced it.
-- The Fellow produced data, analysis, or a report that revealed something new to the supervisor, even if the supervisor later says something critical.
-- The Fellow found a pattern across time periods, teams, shifts, or departments without being explicitly asked to do so.
+Use the surprise + unsolicited test for the 6 vs 7 boundary:
+- Surprise: Was the supervisor learning something new from the Fellow's work, or did the Fellow reveal a pattern, risk, gap, or opportunity the supervisor was not already tracking?
+- Unsolicited: Did the Fellow go looking for this insight or build this view beyond the assigned task, rather than merely completing a requested report, tracker, or formatting task?
+- Business relevance: Is the insight meaningful to operations, quality, speed, cost, customers, or management decisions?
 
-Score 6 ceiling — if NONE of the above triggers appear, keep the score at 6 or below even if the Fellow is praised, builds a tool, or performs well.
+Score 7 requires all three: surprise + unsolicited scope expansion + business relevance.
 
-Self-consistency rule: If your evidence interpretation contains any phrase like "the supervisor did not have access to before", "data-driven insights the supervisor hadn't seen", "the supervisor did not know", or "hadn't noticed that pattern" — your score MUST be 7 or higher. A score of 6 with that evidence is a logical contradiction.
+Score 6 ceiling: If the Fellow built something useful or produced a report, but it was assigned, routine, minor, or merely well-executed within an already-defined scope, keep the score at 6 or below.
+
+Self-consistency rule: If your evidence interpretation says the Fellow surfaced a meaningful new operational insight that the supervisor was not already aware of, then a score of 6 is likely a contradiction. Re-check whether the surprise + unsolicited test is met before finalizing the score.
 
 - Never score above 6 unless there is explicit evidence that the Fellow identified a problem, pattern, or opportunity the supervisor had not already articulated.
 - Never score 9 or 10 unless there is explicit evidence of new systems or tools that others learn from or replicate.
@@ -138,11 +140,11 @@ WRONG SCORING:
 - Score 4: supervisor is critical, laptop time is bad → WRONG. This is presence bias.
 - Score 6: "order tracker indicates systems-building, no evidence of problem identification beyond what was asked" → WRONG. This contradicts the evidence.
   
-WHY 6 IS WRONG HERE: The evidence says "I didn't even know we had shift-wise data." That phrase is an explicit Score 7 trigger. The Fellow surfaced a pattern (shift-wise rejection rates) that the supervisor had never seen before and had never asked for. That IS identifying a problem beyond what was asked.
+WHY 6 IS WRONG HERE: Apply the surprise + unsolicited test. The supervisor is surprised by the shift-wise rejection view, the Fellow appears to have surfaced it beyond a routine assigned task, and rejection rate by shift is meaningful to quality operations. That combination is identifying a business-relevant pattern beyond assigned execution.
 
 CORRECT SCORING: Score 7.
 - "Order tracker the dispatch team uses now" = self-sustaining system (survives the Fellow leaving) = strong positive
-- "Rejection rate by shift — I didn't even know" = Fellow found and surfaced data the supervisor didn't have = explicit Score 7 trigger. Score 7 is mandatory once this evidence is present.
+- "Rejection rate by shift — I didn't even know" = Fellow found and surfaced a business-relevant pattern the supervisor was not already tracking = meets surprise + unsolicited test.
 - "Too much time on her laptop" = presence bias. The laptop produced the tracker and the report. Do not penalize.
 - "Workers don't really listen to her" = real change management gap. Flag it, but it does not cancel the Score 7 evidence.
 - KPIs: TAT (order tracker = system), Quality (rejection report = personal analysis)
@@ -152,17 +154,17 @@ Before writing JSON, silently answer these questions:
 
 1. What are the most important exact quotes from the transcript?
 2. Does each quote show execution, systems building, KPI impact, or change management?
-3. Does any evidence interpretation contain "supervisor did not know", "didn't have access to", "hadn't noticed", or any phrase indicating the Fellow surfaced something new? If YES → score must be 7 or higher.
+3. For any new finding, report, tracker, or analysis: was it assigned routine execution, or did the Fellow independently surface something the supervisor was not already tracking?
 4. Would any created system survive if the Fellow left tomorrow?
 5. Which KPIs are supported by transcript evidence?
 6. Which assessment dimensions are missing or weak?
 7. Which supervisor biases are present? Am I accidentally applying those biases myself?
-8. What score am I about to assign? Now check: does any evidence description say the supervisor lacked this insight before the Fellow? If yes and I am scoring 6, I have a contradiction — raise the score to 7.
+8. What score am I about to assign? Now check the 6 vs 7 boundary: assigned + well executed = 6; surprise + unsolicited + business relevance = 7.
 
 FINAL SELF-CONSISTENCY CHECK before writing JSON:
 - Read every evidence interpretation you are about to write.
-- If any interpretation says the supervisor "did not know", "did not have access to", "hadn't noticed", or "hadn't seen before" — verify the score is 7 or higher.
-- If the score is 6 and your evidence contains any of these phrases — change the score to 7.
+- If an interpretation says the Fellow surfaced a meaningful new operational insight, verify whether it was unsolicited and business-relevant.
+- If yes, score 7. If it was assigned, minor, or not business-relevant, score 6 or below.
 
 Do not output the checklist. Only output the final JSON.
 
