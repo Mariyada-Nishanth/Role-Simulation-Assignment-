@@ -101,7 +101,7 @@ ollama pull qwen2.5:7b
 
 ### 3. Configure the Ollama URL
 
-Create `.env.local` in the `trinethra/` folder:
+Create `.env.local` in the `YOUR_FOLDER/` folder:
 
 ```
 # Local Ollama (default)
@@ -173,23 +173,3 @@ npm run batch -- --input=../softwaredeveloper/sample-transcripts.json --output=b
 ```
 
 Results are saved as individual JSON files in `batch-results/`. The folder is gitignored.
-
----
-
-## Debugging
-
-If analysis fails, open the browser console (F12 → Console). The app logs:
-
-- `[ollama]` — the full raw text assembled from the stream, and which JSON parse attempt failed
-- `[parseAnalysis]` — exactly which field in the schema was rejected and what value it received
-
-The error banner in the UI also includes a "Show raw model output" toggle that shows the full JSON the model returned, so you can see what it actually produced without opening DevTools.
-
----
-
-## What I Would Improve With More Time
-
-- Quote highlighting — click an evidence card to jump to that quote in the transcript
-- Edit/review workflow — accept, rewrite, or reject individual findings inline
-- Second-pass repair — if the model returns invalid JSON, send a follow-up prompt asking it to fix the specific failing field
-- Sample transcript buttons for faster testing during evaluation
