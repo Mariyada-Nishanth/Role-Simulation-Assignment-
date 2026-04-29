@@ -59,8 +59,18 @@ Tests multiple approaches, iterates on solutions, builds new tools that did not 
 Everything at 9, done flawlessly, with others learning from their work and clear organizational-level impact.
 
 Most important scoring boundary:
-- Score 6 = takes initiative within tasks assigned by someone else.
-- Score 7 = expands scope by identifying problems no one asked them to identify.
+- Score 6 = takes initiative WITHIN tasks assigned by someone else. The supervisor defines the scope; the Fellow executes it well.
+- Score 7 = EXPANDS scope by identifying a problem, pattern, or gap the supervisor had NOT asked them to find and had NOT noticed themselves.
+
+AUTOMATIC Score 7 triggers — if ANY of these appear in the transcript, the score MUST be 7 or higher:
+- "I didn't know", "we didn't have", "I hadn't noticed", "I wasn't aware", "I didn't even know" — supervisor admits they lacked this insight BEFORE the Fellow surfaced it.
+- The Fellow produced data, analysis, or a report that revealed something new to the supervisor, even if the supervisor later says something critical.
+- The Fellow found a pattern across time periods, teams, shifts, or departments without being explicitly asked to do so.
+
+Score 6 ceiling — if NONE of the above triggers appear, keep the score at 6 or below even if the Fellow is praised, builds a tool, or performs well.
+
+Self-consistency rule: If your evidence interpretation contains any phrase like "the supervisor did not have access to before", "data-driven insights the supervisor hadn't seen", "the supervisor did not know", or "hadn't noticed that pattern" — your score MUST be 7 or higher. A score of 6 with that evidence is a logical contradiction.
+
 - Never score above 6 unless there is explicit evidence that the Fellow identified a problem, pattern, or opportunity the supervisor had not already articulated.
 - Never score 9 or 10 unless there is explicit evidence of new systems or tools that others learn from or replicate.
 
@@ -118,21 +128,41 @@ Use these traps to calibrate scoring:
 
 - Warm praise plus "always on the floor" should not inflate the score unless there is systems-building or problem-identification evidence.
 - A personally maintained sheet is not a system.
-- A cycle-time study or pattern discovery can be a signal toward 7, but one signal should not override a transcript dominated by assigned execution.
-- Critical feedback about laptop time should not lower the score if the laptop work produced useful trackers, analysis, or systems.
+- Critical feedback about laptop time should not lower the score if the laptop work produced useful trackers, analysis, or systems. Presence bias: supervisor penalizes desk/laptop work — do not penalize it yourself.
 - "My right hand" language usually indicates dependency. Do not score it as 8 or 9 unless durable systems are clearly described.
+
+WORKED EXAMPLE — The exact 6 vs 7 trap (Meena at Lakshmi Textiles):
+Supervisor says: "She spends too much time on her laptop. I keep telling her to be on the floor more. But she made some kind of order tracker that my dispatch team uses now. And she sent me a report last week showing our rejection rate by shift — I didn't even know we had shift-wise data. She's a bit quiet with the workers though, they don't really listen to her."
+
+WRONG SCORING:
+- Score 4: supervisor is critical, laptop time is bad → WRONG. This is presence bias.
+- Score 6: "order tracker indicates systems-building, no evidence of problem identification beyond what was asked" → WRONG. This contradicts the evidence.
+  
+WHY 6 IS WRONG HERE: The evidence says "I didn't even know we had shift-wise data." That phrase is an explicit Score 7 trigger. The Fellow surfaced a pattern (shift-wise rejection rates) that the supervisor had never seen before and had never asked for. That IS identifying a problem beyond what was asked.
+
+CORRECT SCORING: Score 7.
+- "Order tracker the dispatch team uses now" = self-sustaining system (survives the Fellow leaving) = strong positive
+- "Rejection rate by shift — I didn't even know" = Fellow found and surfaced data the supervisor didn't have = explicit Score 7 trigger. Score 7 is mandatory once this evidence is present.
+- "Too much time on her laptop" = presence bias. The laptop produced the tracker and the report. Do not penalize.
+- "Workers don't really listen to her" = real change management gap. Flag it, but it does not cancel the Score 7 evidence.
+- KPIs: TAT (order tracker = system), Quality (rejection report = personal analysis)
 
 ## Preflight Checklist
 Before writing JSON, silently answer these questions:
 
-1. What are the 3-8 most important exact quotes?
+1. What are the most important exact quotes from the transcript?
 2. Does each quote show execution, systems building, KPI impact, or change management?
-3. Did the Fellow identify a problem the supervisor had not asked them to find?
+3. Does any evidence interpretation contain "supervisor did not know", "didn't have access to", "hadn't noticed", or any phrase indicating the Fellow surfaced something new? If YES → score must be 7 or higher.
 4. Would any created system survive if the Fellow left tomorrow?
 5. Which KPIs are supported by transcript evidence?
 6. Which assessment dimensions are missing or weak?
-7. Which supervisor biases are present?
-8. Why this score and not the adjacent lower or higher score?
+7. Which supervisor biases are present? Am I accidentally applying those biases myself?
+8. What score am I about to assign? Now check: does any evidence description say the supervisor lacked this insight before the Fellow? If yes and I am scoring 6, I have a contradiction — raise the score to 7.
+
+FINAL SELF-CONSISTENCY CHECK before writing JSON:
+- Read every evidence interpretation you are about to write.
+- If any interpretation says the supervisor "did not know", "did not have access to", "hadn't noticed", or "hadn't seen before" — verify the score is 7 or higher.
+- If the score is 6 and your evidence contains any of these phrases — change the score to 7.
 
 Do not output the checklist. Only output the final JSON.
 
